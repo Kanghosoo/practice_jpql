@@ -13,13 +13,30 @@ public class JpaMain {
         tx.begin();
 
         try {
+            Team team = new Team();
+            team.setName("teamA");
+            em.persist(team);
+
             Member member = new Member();
-            member.setUsername("member1");
+            member.setUsername("member");
+            member.setAge(10);
+
+            member.setTeam(team);
+
             em.persist(member);
 
-            TypedQuery<Member> query = em.createQuery("select m from Member m", Member.class);
-            List<Member> resultList = query.getResultList();
+            em.flush();
+            em.clear();
 
+            String query = "select m from Member m inner join m.team t";
+            List<Member> result = em.createQuery(query, Member.class)
+                    .getResultList();
+
+            System.out.println("result.size() = " + result.size());
+
+            for  (Member member1 : result) {
+                System.out.println("member1 = " + member1);
+            }
 
             tx.commit();
         } catch (Exception e) {
