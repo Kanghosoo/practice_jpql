@@ -1,6 +1,7 @@
 package jpql;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.List;
 
 public class JpaMain {
@@ -13,30 +14,38 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Team team = new Team();
-            team.setName("teamA");
-            em.persist(team);
 
-            Member member = new Member();
-            member.setUsername("member");
-            member.setAge(10);
-            member.setType(MemberType.ADMIN);
+            Team teamA = new Team();
+            teamA.setName("팀A");
+            em.persist(teamA);
 
-            member.setTeam(team);
+            Team teamB = new Team();
+            teamB.setName("팀B");
+            em.persist(teamB);
 
-            em.persist(member);
+            Member member1 = new Member();
+            member1.setUsername("회원1");
+            member1.setTeam(teamA);
+            em.persist(member1);
+
+            Member member2 = new Member();
+            member2.setUsername("회원2");
+            member2.setTeam(teamA);
+            em.persist(member2);
+
+            Member member3 = new Member();
+            member3.setUsername("회원3");
+            member3.setTeam(teamB);
+            em.persist(member3);
 
             em.flush();
             em.clear();
+            String query = "select m from Member m join fetch m.team";
 
-            String query = "select m.username, 'HELLO', TRUE from Member m " +
-                            "where m.type = :userType";
-            List<Object[]> result = em.createQuery(query).setParameter("userType", MemberType.ADMIN).getResultList();
+            List<Member> result = em.createQuery(query, Member.class).getResultList();
 
-            for (Object[] objects : result) {
-                System.out.println("objects = " + objects[0]);
-                System.out.println("objects = " + objects[1]);
-                System.out.println("objects = " + objects[2]);
+            for (Member member : result) {
+                System.out.println("member = " + member.getUsername()+", "+member.getTeam().getName());
             }
 
             tx.commit();
